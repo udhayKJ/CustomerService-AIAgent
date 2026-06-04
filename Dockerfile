@@ -6,8 +6,8 @@ FROM ollama/ollama:latest AS model-builder
 # Start Ollama server in background, wait for it, and pull models
 RUN ollama serve & \
     sleep 5 && \
-    ollama run gemma2:2b && \
-    ollama run nomic-embed-text:latest
+    ollama pull gemma2:2b && \
+    ollama pull nomic-embed-text:latest
 
 # ==========================================
 # STAGE 2: Final Runtime Image
