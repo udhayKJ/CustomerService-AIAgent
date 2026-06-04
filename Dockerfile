@@ -1,28 +1,46 @@
-# Use an official lightweight Python runtime as a parent image
+﻿# ==========================================
+# STAGE 1: Download Ollama Models
+# ==========================================
+FROM ollama/ollama:latest AS model-builder
+
+# Start Ollama server in background, wait for it, and pull models
+RUN ollama serve & \
+    sleep 5 && \
+    ollama run gemma2:2b && \
+    ollama run nomic-embed-text:latest
+
+# ==========================================
+# STAGE 2: Final Runtime Image
+# ==========================================
 FROM python:3.11-slim
 
-# Set working directory
+# Prevent Python from writing .pyc files and buffer stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
-# Prevents Python from writing .pyc files and buffers stdout/stderr
-ENV PYTHONDONTWRITEBYTECODE=1 \
-	PYTHONUNBUFFERED=1
+# Copy Ollama binary and the downloaded models from the builder stage
+COPY --from=model-builder /usr/bin/ollama /usr/bin/ollama
+COPY --from=model-builder /root/.ollama /root/.ollama
 
-# Install build dependencies, then runtime deps if requirements.txt exists
-#COPY requirements.txt ./
+# Install minimal OS dependencies for Python builds
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update \
-	&& apt-get install -y --no-install-recommends build-essential \
-	&& pip install --no-cache-dir -r requirements.txt || true \
-	&& apt-get remove -y build-essential \
-	&& apt-get autoremove -y \
-	&& rm -rf /var/lib/apt/lists/*
+# Copy and install Python dependencies
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-#Copy project
+# Remove build tools to keep the final image smaller
+RUN apt-get purge -y --auto-remove build-essential
+
+# Copy the rest of your application code
 COPY . /app
 
-# Expose default port (change if your app uses a different one)
-EXPOSE 8000
+# Expose ports: 8000 for your Python app, 11434 for Ollama
+EXPOSE 8000 11434
 
-# Default command: try common entry points
-CMD ["sh", "-c", "if [ -f ./main.py ]; then python main.py; elif [ -f ./app.py ]; then python app.py; else exec \"/bin/sh\"; fi"]
+# Start Ollama in the background, wait 3 seconds, then start the Python application
+CMD sh -c "ollama serve & sleep 3 && python main.py"
