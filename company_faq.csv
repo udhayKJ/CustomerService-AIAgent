@@ -1,0 +1,21 @@
+id,question,answer,category
+1,How do I reset my password?,Click the 'Forgot Password' link on the login page and follow the instructions sent to your registered email address.,Account
+2,How do I change my email address?,Go to Account Settings > Profile and update your email address. Verification may be required.,Account
+3,How can I update my billing information?,Navigate to Billing Settings and update your payment method details.,Billing
+4,What payment methods do you accept?,"We accept major credit cards, debit cards, and selected digital payment methods.",Billing
+5,How do I download my invoices?,Invoices can be downloaded from the Billing History section of your account.,Billing
+6,What is your refund policy?,"Customers may request a refund within 30 days of purchase, subject to our refund policy terms.",Refunds
+7,How long does it take to process a refund?,Approved refunds are typically processed within 5 business days.,Refunds
+8,Can I cancel my subscription anytime?,"Yes, you may cancel your subscription at any time from the Subscription Settings page.",Subscription
+9,Will I lose access immediately after canceling?,"No, you will retain access until the end of your current billing cycle.",Subscription
+10,How do I upgrade my plan?,Go to Subscription Settings and select the desired plan upgrade option.,Subscription
+11,How do I downgrade my plan?,You can downgrade your plan from Subscription Settings. Changes take effect at the next billing cycle.,Subscription
+12,Why can't I log in to my account?,"Ensure your credentials are correct and verify that your account is active. If the issue persists, contact support.",Account
+13,How do I enable two-factor authentication?,Navigate to Security Settings and follow the instructions to enable two-factor authentication.,Security
+14,What should I do if I suspect unauthorized access?,Immediately change your password and contact support for further assistance.,Security
+15,How can I contact customer support?,"You can reach customer support via email, live chat, or the Help Center.",Support
+16,What are your customer support hours?,Customer support is available Monday through Friday from 9:00 AM to 6:00 PM.,Support
+17,How do I report a bug?,"Submit a bug report through the Help Center, including steps to reproduce the issue.",Support
+18,Where can I find product documentation?,Product documentation is available in the Help Center and Documentation Portal.,Product
+19,How do I delete my account?,Account deletion requests can be submitted through Account Settings or by contacting support.,Account
+20,How do I update my profile information?,Profile information can be edited from the Profile section in Account Settings.,Account
