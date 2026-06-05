@@ -1,4 +1,4 @@
-﻿# ==========================================
+# ==========================================
 # STAGE 1: Download Ollama Models
 # ==========================================
 FROM ollama/ollama:latest AS model-builder
@@ -20,8 +20,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Copy Ollama binary and the downloaded models from the builder stage
+# Copy Ollama binary, libraries, and the downloaded models from the builder stage
 COPY --from=model-builder /usr/bin/ollama /usr/bin/ollama
+COPY --from=model-builder /usr/lib/ollama /usr/lib/ollama
 COPY --from=model-builder /root/.ollama /root/.ollama
 
 # Install minimal OS dependencies for Python builds
