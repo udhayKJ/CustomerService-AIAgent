@@ -1,8 +1,9 @@
 langchain
 langchain_ollama
+langchain_classic
 langchain_core
 langchain_chroma
 pandas
-
-
-           
+psutil
+fastapi
+uvicorn

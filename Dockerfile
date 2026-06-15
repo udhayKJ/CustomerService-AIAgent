@@ -13,6 +13,7 @@ RUN ollama serve & \
 # STAGE 2: Final Runtime Image
 # ==========================================
 FROM python:3.11-slim
+ENV OLLAMA_DEBUG=WARN
 
 # Prevent Python from writing .pyc files and buffer stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -43,5 +44,5 @@ COPY . /app
 # Expose ports: 8000 for your Python app, 11434 for Ollama
 EXPOSE 8000 11434
 
-# Start Ollama in the background, wait 3 seconds, then start the Python application
-CMD sh -c "ollama serve & sleep 3 && python main.py"
+# Start Ollama in the background, wait 3 seconds, then start the FastAPI API application
+CMD sh -c "ollama serve & sleep 3 && uvicorn app:app --host 0.0.0.0 --port 8000"
