@@ -3,11 +3,15 @@
 # ==========================================
 FROM ollama/ollama:latest AS model-builder
 
-# Start Ollama server in background, wait for it, and pull models
+# Start Ollama server in background, poll until responsive, and pull models
 RUN ollama serve & \
-    sleep 5 && \
+    until ollama list >/dev/null 2>&1; do echo "Waiting for Ollama..." && sleep 1; done && \
     ollama pull gemma2:2b && \
     ollama pull nomic-embed-text:latest
+
+# Extract only the CPU-only llama-server binary and libraries (omitting ~4GB CUDA/ROCm GPU runtimes)
+RUN mkdir -p /usr/lib/ollama-cpu && \
+    cp -d /usr/lib/ollama/llama-server /usr/lib/ollama/llama-quantize /usr/lib/ollama/*.so* /usr/lib/ollama-cpu/
 
 # ==========================================
 # STAGE 2: Final Runtime Image
@@ -21,28 +25,25 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Copy Ollama binary, libraries, and the downloaded models from the builder stage
+# Copy Ollama binary, CPU-only libraries, and the downloaded models from the builder stage
 COPY --from=model-builder /usr/bin/ollama /usr/bin/ollama
-COPY --from=model-builder /usr/lib/ollama /usr/lib/ollama
+COPY --from=model-builder /usr/lib/ollama-cpu /usr/lib/ollama
 COPY --from=model-builder /root/.ollama /root/.ollama
 
-# Install minimal OS dependencies for Python builds
+# Install minimal runtime dependencies (curl is useful for container health checks)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential && \
+    apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python dependencies
+# Copy and install Python dependencies (no build-essential needed; pre-built wheels exist for all dependencies)
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Remove build tools to keep the final image smaller
-RUN apt-get purge -y --auto-remove build-essential
-
-# Copy the rest of your application code
+# Copy the application code (utilizes .dockerignore to exclude local .venv, .cache, and db files)
 COPY . /app
 
-# Expose ports: 8000 for your Python app, 11434 for Ollama
+# Expose ports: 8000 for FastAPI application, 11434 for Ollama
 EXPOSE 8000 11434
 
-# Start Ollama in the background, wait 3 seconds, then start the FastAPI API application
-CMD sh -c "ollama serve & sleep 3 && uvicorn app:app --host 0.0.0.0 --port 8000"
+# Start Ollama in the background, wait for it to be ready, then start the FastAPI app
+CMD ["sh", "-c", "ollama serve & until curl -s http://localhost:11434/api/tags >/dev/null; do sleep 0.5; done && uvicorn app:app --host 0.0.0.0 --port 8000"]

@@ -82,7 +82,11 @@ def log(
         "blocked_input": blocked_input
     }
 
+    import os
+    os.makedirs("logs", exist_ok=True)
+    
     with open("logs.jsonl", "a", encoding="utf-8" ) as f:
         f.write(json.dumps(trace) + "\n" )
-            
+    
+    
     return trace
